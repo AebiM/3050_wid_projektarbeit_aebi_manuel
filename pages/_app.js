@@ -7,6 +7,7 @@ export default function App() {
   const [filteredData, setFilteredData] = useState([]);
   const [locations, setLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState("All");
+  const [selectedAttribute, setSelectedAttribute] = useState("T"); // Standard: Temperatur
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -16,12 +17,11 @@ export default function App() {
       .get("http://localhost:3000/api/py/meteodaten")
       .then((response) => {
         const apiData = response.data;
-        console.log(response.data);
 
         // Einzigartige Standorte extrahieren
         const uniqueLocations = [
           "All",
-          ...new Set(apiData.map((item) => item.Name)),
+          ...new Set(apiData.map((item) => item.Standortname)),
         ];
 
         setData(apiData);
@@ -36,39 +36,76 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // Daten filtern, wenn der Standort geändert wird
+    // Daten filtern, wenn der Standort oder das Attribut geändert wird
     const newFilteredData =
       selectedLocation === "All"
         ? data
-        : data.filter((item) => item.Name === selectedLocation);
+        : data.filter((item) => item.Standortname === selectedLocation);
     setFilteredData(newFilteredData);
   }, [selectedLocation, data]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  // Vega-Lite-Spezifikation
+  // Vega-Lite-Spezifikation für das Diagramm
   const spec = {
-    width: 550,
-    height: 300,
-    title: `Standorthöhen für ${selectedLocation}`,
+    width: 800,
+    height: 400,
+    title: `Wetterdaten für ${selectedLocation}`,
     data: { values: filteredData },
     encoding: {
-      x: { field: "Name", type: "nominal", title: "Standort" },
-      y: { field: "Höhe [M.ü.M.]", type: "quantitative", title: "Höhe (m)" },
+      x: {
+        field: "Datum",
+        type: "temporal",
+        title: "Datum",
+        scale: {
+          domain: [
+            Math.min(...filteredData.map((d) => d.Datum)),
+            Math.max(...filteredData.map((d) => d.Datum)),
+          ],
+        },
+        timeUnit: "yearmonthdatehours", // Zeigt Datum und Uhrzeit auf der x-Achse an
+      },
+      y: {
+        field: selectedAttribute,
+        type: "quantitative",
+        title: getAttributeTitle(selectedAttribute),
+      },
       tooltip: [
-        { field: "Name", type: "nominal", title: "Name" },
-        { field: "Höhe [M.ü.M.]", type: "quantitative", title: "Höhe (m)" },
-        { field: "Adresse", type: "nominal", title: "Adresse" },
-        { field: "Beschreibung", type: "nominal", title: "Beschreibung" },
+        { field: "Standortname", type: "nominal", title: "Standort" },
+        {
+          field: "Datum",
+          type: "temporal",
+          title: "Datum",
+          format: "%Y-%m-%d %H:%M",
+        },
+        {
+          field: selectedAttribute,
+          type: "quantitative",
+          title: getAttributeTitle(selectedAttribute),
+        },
       ],
     },
-    mark: "bar",
+    mark: "line", // Diagrammtyp auf "line" setzen
   };
+
+  // Hilfsfunktion, um den Titel für das Attribut zu bekommen
+  function getAttributeTitle(attribute) {
+    switch (attribute) {
+      case "RainDur":
+        return "Regensdauer (min)";
+      case "T":
+        return "Temperatur (°C)";
+      case "p":
+        return "Luftdruck (hPa)";
+      default:
+        return "";
+    }
+  }
 
   return (
     <>
-      <h1>Standortdaten-Visualisierung</h1>
+      <h1>Wetterdaten-Visualisierung</h1>
 
       {/* Standort Dropdown */}
       <label>
@@ -82,6 +119,19 @@ export default function App() {
               {location}
             </option>
           ))}
+        </select>
+      </label>
+
+      {/* Attribut Dropdown */}
+      <label>
+        Attribut:
+        <select
+          value={selectedAttribute}
+          onChange={(e) => setSelectedAttribute(e.target.value)}
+        >
+          <option value="T">Temperatur (°C)</option>
+          <option value="RainDur">Regensdauer (min)</option>
+          <option value="p">Luftdruck (hPa)</option>
         </select>
       </label>
 

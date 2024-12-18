@@ -1,27 +1,21 @@
-from fastapi import FastAPI, HTTPException
-import requests
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
+import json
+from pathlib import Path
 
-# Create FastAPI instance with custom docs and OpenAPI URLs
+# Create FastAPI instance
 app = FastAPI(docs_url="/api/py/docs", openapi_url="/api/py/openapi.json")
 
-# URL der JSON-Daten
-DATA_URL = "https://data.stadt-zuerich.ch/dataset/ugz_meteodaten_tagesmittelwerte/download/uzg_ogd_metadaten.json"
+# Pfad zur JSON-Datei
+JSON_FILE_PATH = Path("src/meteodaten_2023_daily.json")
 
-# Route, um die JSON-Daten vom Server zu laden und bereitzustellen
 @app.get("/api/py/meteodaten")
-def meteodaten():
+def get_meteodaten():
     try:
-        # Anfrage an die externe URL
-        response = requests.get(DATA_URL)
-        response.raise_for_status()  # Überprüfen, ob die Anfrage erfolgreich war
-        data = response.json()  # JSON-Daten parsen
-        return JSONResponse(content=data)  # Daten als JSON-Antwort zurückgeben
-    except requests.exceptions.RequestException as e:
-        # Fehler behandeln, wenn die Anfrage fehlschlägt
-        raise HTTPException(status_code=500, detail=f"Fehler beim Abrufen der Daten: {e}")
-
-# Test-Route, um die API zu überprüfen
-@app.get("/api/py/test")
-def test_endpoint():
-    return {"message": "Test erfolgreich"}
+        # JSON-Datei öffnen und laden
+        with open(JSON_FILE_PATH, encoding="utf-8") as file:
+            data = json.load(file)
+        return data
+    except FileNotFoundError:
+        return {"error": "JSON file not found. Please check the path and filename."}
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON format. Please check the file content."}
