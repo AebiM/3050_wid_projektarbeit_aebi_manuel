@@ -14,7 +14,9 @@ export default function App() {
   useEffect(() => {
     // Daten von der API abrufen
     axios
-      .get("http://localhost:3000/api/py/meteodaten")
+      .get(
+        "https://3050widprojektarbeitaebimanuel.vercel.app/api/py/meteodaten"
+      )
       .then((response) => {
         const apiData = response.data;
 
