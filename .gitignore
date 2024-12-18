@@ -37,3 +37,5 @@ next-env.d.ts
 # python
 __pycache__/
 venv
+yarn.lock
+app/page.tsx

@@ -1,2 +1,5 @@
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
+
+
+# alles was der server benötigt an libaryes muss hier augfelistet sein
