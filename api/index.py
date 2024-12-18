@@ -9,8 +9,8 @@ app = FastAPI(docs_url="/api/py/docs", openapi_url="/api/py/openapi.json")
 DATA_URL = "https://data.stadt-zuerich.ch/dataset/ugz_meteodaten_tagesmittelwerte/download/uzg_ogd_metadaten.json"
 
 # Route, um die JSON-Daten vom Server zu laden und bereitzustellen
-@app.get("/api/py/meteodata")
-def get_meteodata():
+@app.get("/api/py/meteodaten")
+def meteodaten():
     try:
         # Anfrage an die externe URL
         response = requests.get(DATA_URL)
