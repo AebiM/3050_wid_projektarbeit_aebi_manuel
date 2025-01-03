@@ -40,7 +40,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // Daten filtern, wenn der Standort oder das Attribut geändert wird
     const newFilteredData = data.filter(
       (item) => item.Standortname === selectedLocation
     );
@@ -50,7 +49,6 @@ export default function App() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  // Vega-Lite-Spezifikation für das Diagramm
   const spec = {
     width: 800,
     height: 400,
@@ -86,7 +84,6 @@ export default function App() {
     mark: "line",
   };
 
-  // Hilfsfunktion, um den Titel für das Attribut zu bekommen
   function getAttributeTitle(attribute) {
     switch (attribute) {
       case "RainDur":
@@ -119,7 +116,7 @@ export default function App() {
         </select>
       </label>
       {/* Attribut Dropdown */}
-      <label>
+      <>
         Attribut:
         <select
           value={selectedAttribute}
@@ -129,10 +126,9 @@ export default function App() {
           <option value="RainDur">Regensdauer (min)</option>
           <option value="p">Luftdruck (hPa)</option>
         </select>
-        <h2>Mit Maus über Graf fahren für Infos</h2>
-        {/* Diagramm */}
+        <h2 style="margin-right: 2px;">Mit Maus über Graf fahren für Infos</h2>
         <VegaLite spec={spec} />
-      </label>
+      </>
     </>
   );
 }
