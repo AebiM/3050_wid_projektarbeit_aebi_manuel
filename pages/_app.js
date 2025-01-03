@@ -108,12 +108,12 @@ export default function App() {
 
   return (
     <>
-      <Typography Variant="h1">Wetterdaten-Visualisierung</Typography>
-      <Typography Variant="h3">Nach standort und Attribut Filtern</Typography>
+      <h1>Wetterdaten-Visualisierung</h1>
+      <h3>Nach standort und Attribut Filtern</h3>
       {/* Standort Dropdown */}
       <label>
         Standort:
-        <Select
+        <select
           value={selectedLocation}
           onChange={(e) => setSelectedLocation(e.target.value)}
         >
@@ -122,22 +122,20 @@ export default function App() {
               {location}
             </option>
           ))}
-        </Select>
+        </select>
       </label>
       {/* Attribut Dropdown */}
       <label>
         Attribut:
-        <Select
+        <select
           value={selectedAttribute}
           onChange={(e) => setSelectedAttribute(e.target.value)}
         >
           <option value="T">Temperatur (°C)</option>
           <option value="RainDur">Regensdauer (min)</option>
           <option value="p">Luftdruck (hPa)</option>
-        </Select>
-        <Typography Variant="h2">
-          Mit Maus über Graf fahren für Infos
-        </Typography>
+        </select>
+        <h2>Mit Maus über Graf fahren für Infos</h2>
         {/* Diagramm */}
         <VegaLite spec={spec} />
       </label>
