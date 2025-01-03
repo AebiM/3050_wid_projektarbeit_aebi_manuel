@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { VegaLite } from "react-vega";
+import { Select, Typography } from "@mui/material";
 
 export default function App() {
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [selectedLocation, setSelectedLocation] = useState("");
-  const [selectedAttribute, setSelectedAttribute] = useState("T"); // Standard: Temperatur
+  const [Daten, setDaten] = useState([]);
+  const [gefiltert, setGefiltert] = useState([]);
+  const [standort, setStandort] = useState([]);
+  const [gewstandort, setGewstandort] = useState(""); // Default auf ersten Standort setzen
+  const [attribut, setAttribut] = useState("T"); // Standard: Temperatur
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,17 +21,15 @@ export default function App() {
       .then((response) => {
         const apiData = response.data;
 
-        // Einzigartige Standorte extrahieren
-        const uniqueLocations = [
+        // Einzigartige Standorte extrahieren, "All" entfernen
+        const uniqueStandorte = [
           ...new Set(apiData.map((item) => item.Standortname)),
         ];
 
-        setData(apiData);
-        setFilteredData(
-          apiData.filter((item) => item.Standortname === uniqueLocations[0])
-        );
-        setLocations(uniqueLocations);
-        setSelectedLocation(uniqueLocations[0]); // Standardauswahl setzen
+        setDaten(apiData);
+        setGefiltert(apiData);
+        setStandort(uniqueStandorte);
+        setGewstandort(uniqueStandorte[0]); // Erster Standort als Standardwert
         setLoading(false);
       })
       .catch((err) => {
@@ -40,31 +39,39 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const newFilteredData = data.filter(
-      (item) => item.Standortname === selectedLocation
+    // Daten filtern, wenn der Standort oder das Attribut geändert wird
+    const newGefiltert = Daten.filter(
+      (item) => item.Standortname === gewstandort
     );
-    setFilteredData(newFilteredData);
-  }, [selectedLocation, data]);
+    setGefiltert(newGefiltert);
+  }, [gewstandort, Daten]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
+  // Vega-Lite-Spezifikation für das Diagramm
   const spec = {
     width: 800,
     height: 400,
-    title: `Wetterdaten für ${selectedLocation}`,
-    data: { values: filteredData },
+    title: `Wetterdaten für ${gewstandort}`,
+    data: { values: gefiltert },
     encoding: {
       x: {
         field: "Datum",
         type: "temporal",
         title: "Datum",
-        timeUnit: "yearmonthdatehours",
+        scale: {
+          domain: [
+            Math.min(...gefiltert.map((d) => d.Datum)),
+            Math.max(...gefiltert.map((d) => d.Datum)),
+          ],
+        },
+        timeUnit: "yearmonthdatehours", // Zeigt Datum und Uhrzeit auf der x-Achse an
       },
       y: {
-        field: selectedAttribute,
+        field: attribut,
         type: "quantitative",
-        title: getAttributeTitle(selectedAttribute),
+        title: getAttributeTitle(attribut),
       },
       tooltip: [
         { field: "Standortname", type: "nominal", title: "Standort" },
@@ -75,15 +82,16 @@ export default function App() {
           format: "%Y-%m-%d %H:%M",
         },
         {
-          field: selectedAttribute,
+          field: attribut,
           type: "quantitative",
-          title: getAttributeTitle(selectedAttribute),
+          title: getAttributeTitle(attribut),
         },
       ],
     },
-    mark: "line",
+    mark: "line", // Diagrammtyp auf "line" setzen
   };
 
+  // Hilfsfunktion, um den Titel für das Attribut zu bekommen
   function getAttributeTitle(attribute) {
     switch (attribute) {
       case "RainDur":
@@ -100,15 +108,15 @@ export default function App() {
   return (
     <>
       <h1>Wetterdaten-Visualisierung</h1>
-      <h3>Nach Standort und Attribut filtern</h3>
+      <h3>Nach Standort und Attribut Filtern</h3>
       {/* Standort Dropdown */}
       <label>
         Standort:
         <select
-          value={selectedLocation}
-          onChange={(e) => setSelectedLocation(e.target.value)}
+          value={gewstandort}
+          onChange={(e) => setGewstandort(e.target.value)}
         >
-          {locations.map((location) => (
+          {standort.map((location) => (
             <option key={location} value={location}>
               {location}
             </option>
@@ -116,19 +124,17 @@ export default function App() {
         </select>
       </label>
       {/* Attribut Dropdown */}
-      <>
+      <label>
         Attribut:
-        <select
-          value={selectedAttribute}
-          onChange={(e) => setSelectedAttribute(e.target.value)}
-        >
+        <select value={attribut} onChange={(e) => setAttribut(e.target.value)}>
           <option value="T">Temperatur (°C)</option>
           <option value="RainDur">Regensdauer (min)</option>
           <option value="p">Luftdruck (hPa)</option>
         </select>
-        <h2 style="margin-right: 2px;">Mit Maus über Graf fahren für Infos</h2>
+        <h2>Mit Maus über Graf fahren für Infos</h2>
+        {/* Diagramm */}
         <VegaLite spec={spec} />
-      </>
+      </label>
     </>
   );
 }
