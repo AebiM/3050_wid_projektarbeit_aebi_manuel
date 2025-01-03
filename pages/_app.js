@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { VegaLite } from "react-vega";
-import { Select, Typography } from "@mui/material";
 
 export default function App() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [locations, setLocations] = useState([]);
-  const [selectedLocation, setSelectedLocation] = useState("All");
+  const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedAttribute, setSelectedAttribute] = useState("T"); // Standard: Temperatur
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,13 +22,15 @@ export default function App() {
 
         // Einzigartige Standorte extrahieren
         const uniqueLocations = [
-          "All",
           ...new Set(apiData.map((item) => item.Standortname)),
         ];
 
         setData(apiData);
-        setFilteredData(apiData);
+        setFilteredData(
+          apiData.filter((item) => item.Standortname === uniqueLocations[0])
+        );
         setLocations(uniqueLocations);
+        setSelectedLocation(uniqueLocations[0]); // Standardauswahl setzen
         setLoading(false);
       })
       .catch((err) => {
@@ -40,10 +41,9 @@ export default function App() {
 
   useEffect(() => {
     // Daten filtern, wenn der Standort oder das Attribut geändert wird
-    const newFilteredData =
-      selectedLocation === "All"
-        ? data
-        : data.filter((item) => item.Standortname === selectedLocation);
+    const newFilteredData = data.filter(
+      (item) => item.Standortname === selectedLocation
+    );
     setFilteredData(newFilteredData);
   }, [selectedLocation, data]);
 
@@ -61,13 +61,7 @@ export default function App() {
         field: "Datum",
         type: "temporal",
         title: "Datum",
-        scale: {
-          domain: [
-            Math.min(...filteredData.map((d) => d.Datum)),
-            Math.max(...filteredData.map((d) => d.Datum)),
-          ],
-        },
-        timeUnit: "yearmonthdatehours", // Zeigt Datum und Uhrzeit auf der x-Achse an
+        timeUnit: "yearmonthdatehours",
       },
       y: {
         field: selectedAttribute,
@@ -89,7 +83,7 @@ export default function App() {
         },
       ],
     },
-    mark: "line", // Diagrammtyp auf "line" setzen
+    mark: "line",
   };
 
   // Hilfsfunktion, um den Titel für das Attribut zu bekommen
@@ -109,7 +103,7 @@ export default function App() {
   return (
     <>
       <h1>Wetterdaten-Visualisierung</h1>
-      <h3>Nach standort und Attribut Filtern</h3>
+      <h3>Nach Standort und Attribut filtern</h3>
       {/* Standort Dropdown */}
       <label>
         Standort:
