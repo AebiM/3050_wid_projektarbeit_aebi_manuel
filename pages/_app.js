@@ -1,35 +1,32 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { VegaLite } from "react-vega";
-import { Select, Typography } from "@mui/material";
 
 export default function App() {
   const [Daten, setDaten] = useState([]);
   const [gefiltert, setGefiltert] = useState([]);
   const [standort, setStandort] = useState([]);
-  const [gewstandort, setGewstandort] = useState(""); // Default auf ersten Standort setzen
-  const [attribut, setAttribut] = useState("T"); // Standard: Temperatur
+  const [gewstandort, setGewstandort] = useState("");
+  const [attribut, setAttribut] = useState("T");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Daten von der API abrufen
     axios
       .get(
         "https://3050widprojektarbeitaebimanuel.vercel.app/api/py/meteodaten"
       )
       .then((response) => {
-        const apiData = response.data;
+        const apiDaten = response.data;
 
-        // Einzigartige Standorte extrahieren, "All" entfernen
         const uniqueStandorte = [
-          ...new Set(apiData.map((item) => item.Standortname)),
+          ...new Set(apiDaten.map((item) => item.Standortname)),
         ];
 
-        setDaten(apiData);
-        setGefiltert(apiData);
+        setDaten(apiDaten);
+        setGefiltert(apiDaten);
         setStandort(uniqueStandorte);
-        setGewstandort(uniqueStandorte[0]); // Erster Standort als Standardwert
+        setGewstandort(uniqueStandorte[0]);
         setLoading(false);
       })
       .catch((err) => {
