@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { VegaLite } from "react-vega";
-import { Select } from "@mui/material";
+import { Select, Typography } from "@mui/material";
 
 export default function App() {
   const [data, setData] = useState([]);
@@ -108,8 +108,8 @@ export default function App() {
 
   return (
     <>
-      <h1>Wetterdaten-Visualisierung</h1>
-
+      <Typography Variant="h1">Wetterdaten-Visualisierung</Typography>
+      <Typography Variant="h3">Nach standort und Attribut Filtern</Typography>
       {/* Standort Dropdown */}
       <label>
         Standort:
@@ -124,7 +124,6 @@ export default function App() {
           ))}
         </Select>
       </label>
-
       {/* Attribut Dropdown */}
       <label>
         Attribut:
@@ -136,7 +135,9 @@ export default function App() {
           <option value="RainDur">Regensdauer (min)</option>
           <option value="p">Luftdruck (hPa)</option>
         </Select>
-        <h1>Mit Maus über Graf fahren für Infos</h1>
+        <Typography Variant="h2">
+          Mit Maus über Graf fahren für Infos
+        </Typography>
         {/* Diagramm */}
         <VegaLite spec={spec} />
       </label>
